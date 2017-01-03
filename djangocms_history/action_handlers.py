@@ -5,8 +5,12 @@ from .helpers import delete_plugins, disable_cms_plugin_signals
 
 
 @disable_cms_plugin_signals
-def _delete_plugins(action, plugin_ids):
-    delete_plugins(placeholder=action.placeholder, plugin_ids=plugin_ids)
+def _delete_plugins(action, plugin_ids, root_plugins=False):
+    delete_plugins(
+        placeholder=action.placeholder,
+        plugin_ids=plugin_ids,
+        root_plugins=root_plugins,
+    )
     action.placeholder.mark_as_dirty(action.language, clear_cache=False)
 
 
@@ -313,7 +317,7 @@ def undo_add_plugins_from_placeholder(action):
     tree_order = action.get_pre_action_data()['order']
     post_data = action.get_post_action_data()
     plugin_ids = (plugin.pk for plugin in post_data['plugins'])
-    _delete_plugins(action, plugin_ids=plugin_ids)
+    _delete_plugins(action, plugin_ids=plugin_ids, root_plugins=True)
     _reorder_plugins(
         action,
         parent_id=None,

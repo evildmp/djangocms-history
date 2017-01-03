@@ -17,7 +17,7 @@ from cms.utils import get_language_from_request
 from .utils import get_plugin_fields, get_plugin_model
 
 
-def delete_plugins(placeholder, plugin_ids):
+def delete_plugins(placeholder, plugin_ids, root_plugins=False):
     # With plugins, we can't do queryset.delete()
     # because this would trigger a bunch of internal
     # cms signals.
@@ -31,15 +31,14 @@ def delete_plugins(placeholder, plugin_ids):
         .select_related()
     )
 
-    for plugin in plugins.iterator():
-        inst, cls = plugin.get_plugin_instance()
-        if inst and getattr(inst, 'cmsplugin_ptr', False):
-            inst.cmsplugin_ptr._no_reorder = True
-            inst._no_reorder = True
-            inst.delete()
-        else:
-            plugin._no_reorder = True
-            plugin.delete()
+    bound_plugins = get_bound_plugins(plugins)
+
+    for plugin in bound_plugins:
+        plugin._no_reorder = True
+
+        if hasattr(plugin, 'cmsplugin_ptr'):
+            plugin.cmsplugin_ptr._no_reorder = True
+        plugin.delete(no_mp=root_plugins)
 
 
 def get_bound_plugins(plugins):
