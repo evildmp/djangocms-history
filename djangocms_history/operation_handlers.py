@@ -345,7 +345,7 @@ def pre_add_plugins_from_placeholder(operation, **kwargs):
     # Stores
     #   * plugin data for the pasted plugins
 
-    action_data = {'order': kwargs['tree_order']}
+    action_data = {'order': kwargs['target_order']}
 
     operation.create_action(
         action=actions.ADD_PLUGINS_FROM_PLACEHOLDER,
