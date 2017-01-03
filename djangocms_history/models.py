@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.signals import user_logged_in
 from django.db import models
+from django.db import transaction
 from django.db.models import Q
 from django.dispatch import receiver
 
@@ -310,12 +311,14 @@ class PlaceholderOperation(models.Model):
     def set_post_action_data(self, action, data):
         self.actions.filter(action=action).update(post_action_data=dump_json(data))
 
+    @transaction.atomic
     def undo(self):
         for action in self.actions.order_by('order'):
             action.undo()
         self.is_applied = False
         self.save(update_fields=['is_applied'])
 
+    @transaction.atomic
     def redo(self):
         for action in self.actions.order_by('-order'):
             action.redo()
@@ -369,8 +372,10 @@ class PlaceholderAction(models.Model):
     def get_post_action_data(self):
         return self._get_parsed_data(self.post_action_data)
 
+    @transaction.atomic
     def undo(self):
         _action_handlers[self.action]['undo'](self)
 
+    @transaction.atomic
     def redo(self):
         _action_handlers[self.action]['redo'](self)

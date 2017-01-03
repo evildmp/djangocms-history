@@ -3,7 +3,6 @@ from datetime import timedelta
 
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 from django.db.models import signals
 from django.utils import timezone
 
@@ -18,7 +17,6 @@ from cms.utils import get_language_from_request
 from .utils import get_plugin_fields, get_plugin_model
 
 
-@transaction.atomic
 def delete_plugins(placeholder, plugin_ids):
     # With plugins, we can't do queryset.delete()
     # because this would trigger a bunch of internal
